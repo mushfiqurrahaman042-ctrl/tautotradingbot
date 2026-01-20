@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  trading-bot:
+    build: .
+    ports:
+      - "8003:8003"
+    environment:
+      - USE_TESTNET=true
+      - WEBHOOK_PASSPHRASE=my_secure_passphrase_123
+      - DATABASE_URL=sqlite:///data/trading_bot.db
+    volumes:
+      - ./data:/app/data
+      - .env:/app/.env:ro
+    restart: unless-stopped
+    networks:
+      - trading-network
+
+networks:
+  trading-network:
+    driver: bridge

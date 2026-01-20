@@ -1,0 +1,46 @@
+# Koyeb Deployment Configuration
+name: arts-trading-bot
+services:
+  - name: web
+    image: python:3.11-slim
+    ports:
+      - "8000:http"
+    env:
+      - key: PORT
+        value: "8000"
+      - key: HOST
+        value: "0.0.0.0"
+      - key: ENVIRONMENT
+        value: "production"
+      - key: LOG_LEVEL
+        value: "debug"
+      - key: RELOAD
+        value: "false"
+      - key: WORKERS
+        value: "1"
+      - key: DATABASE_URL
+        value: "sqlite:///data/trading_bot.db"
+      - key: USE_TESTNET
+        value: "true"
+      # Account configurations will be set via Koyeb secrets
+    volumes:
+      - name: data
+        mount_path: /app/data
+    commands:
+      - pip install --no-cache-dir -r requirements.txt
+      - python -m uvicorn main:app --host 0.0.0.0 --port 8000
+    health_checks:
+      - protocol: http
+        path: /status
+        port: 8000
+        grace_period: 30s
+        interval: 30s
+        restart_limit: 3
+    auto_release: true
+    instance_type: nano
+    scaling:
+      min: 1
+      max: 1
+      targets:
+        - type: cpu
+          value: 70
