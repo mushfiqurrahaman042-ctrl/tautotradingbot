@@ -1,9 +1,9 @@
 # Web Framework
 fastapi==0.109.0
 uvicorn==0.27.0
+jinja2==3.1.3
 
 # Exchange Connectivity
-# Use binance-futures-connector for um_futures support
 binance-futures-connector==4.0.1
 pybit==5.8.0
 ccxt==4.2.14
@@ -15,3 +15,4 @@ SQLAlchemy==2.0.25
 # Utility
 pydantic==2.5.3
 httpx==0.26.0
+
