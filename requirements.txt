@@ -2,8 +2,10 @@
 fastapi==0.109.0
 uvicorn==0.27.0
 
-# Exchange Connectivity (Binance/Bybit support)
-binance-connector>=2.0.0
+# Exchange Connectivity
+# Use binance-futures-connector for um_futures support
+binance-futures-connector==4.0.1
+pybit==5.8.0
 ccxt==4.2.14
 
 # Database and Environment
