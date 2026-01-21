@@ -3,7 +3,8 @@ fastapi==0.109.0
 uvicorn==0.27.0
 
 # Exchange Connectivity (Binance/Bybit support)
-binance-connector
+binance-connector>=2.2.0
+python-binance
 ccxt==4.2.14
 
 # Database and Environment
