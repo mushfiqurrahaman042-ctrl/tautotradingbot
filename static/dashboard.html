@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arts One Two Three Trading Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border: 1px solid rgba(0, 0, 0, 0.125);
+        }
+        .bg-primary-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .bg-success-gradient {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        .bg-warning-gradient {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+        .bg-danger-gradient {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+        }
+        .profit-positive {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .profit-negative {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .status-open {
+            color: #28a745;
+        }
+        .status-closed {
+            color: #6c757d;
+        }
+        .table th {
+            background-color: #f8f9fa;
+        }
+        .refresh-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Header -->
+        <header class="bg-primary-gradient text-white py-3 mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1><i class="fas fa-chart-line me-2"></i>Arts One Two Three Trading Dashboard</h1>
+                    <p class="mb-0">Real-time monitoring of Binance and Bybit trading activities</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <button class="btn btn-light refresh-btn" onclick="refreshAllData()">
+                        <i class="fas fa-sync-alt"></i> Refresh All Data
+                    </button>
+                    <div id="lastUpdated" class="mt-2 small">Last updated: Just now</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card bg-primary-gradient text-white">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-uppercase mb-1">Total Positions</div>
+                                <div class="h5 mb-0" id="totalPositions">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-list fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card bg-success-gradient text-white">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-uppercase mb-1">Active Positions</div>
+                                <div class="h5 mb-0" id="activePositions">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-fire fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card bg-warning-gradient text-white">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-uppercase mb-1">Today's Events</div>
+                                <div class="h5 mb-0" id="todayEvents">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-bolt fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card bg-danger-gradient text-white">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-uppercase mb-1">Connected Accounts</div>
+                                <div class="h5 mb-0" id="connectedAccounts">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-plug fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accounts Balance Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0"><i class="fas fa-wallet me-2"></i>Account Balances</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="accountsContainer">
+                            <!-- Accounts will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Positions Table -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Open Positions</h5>
+                        <div>
+                            <input type="text" id="searchPositions" class="form-control form-control-sm" placeholder="Search positions..." style="width: 200px;">
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="positionsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Account</th>
+                                        <th>Symbol</th>
+                                        <th>Strategy</th>
+                                        <th>Side</th>
+                                        <th>Initial Qty</th>
+                                        <th>Remaining Qty</th>
+                                        <th>Entry Price</th>
+                                        <th>Current Price</th>
+                                        <th>P&L %</th>
+                                        <th>TP Level</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="positionsTableBody">
+                                    <!-- Positions will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Events -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Events</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="eventsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Event ID</th>
+                                        <th>Timestamp</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="eventsTableBody">
+                                    <!-- Events will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exchange Comparison -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0"><i class="fas fa-balance-scale me-2"></i>Exchange Activity Comparison</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="exchangeComparison">
+                            <!-- Exchange comparison will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Global variables to store data
+        let positionsData = [];
+        let eventsData = [];
+        let accountsData = [];
+
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            // Refresh data every 30 seconds
+            setInterval(loadData, 30000);
+        });
+
+        async function loadData() {
+            try {
+                // Load all data concurrently
+                const [positions, events, accounts] = await Promise.all([
+                    fetch('/api/positions').then(r => r.json()),
+                    fetch('/api/events').then(r => r.json()),
+                    fetch('/api/accounts').then(r => r.json())
+                ]);
+
+                positionsData = positions;
+                eventsData = events;
+                accountsData = accounts;
+
+                updateStats();
+                renderAccounts();
+                renderPositions();
+                renderEvents();
+                renderExchangeComparison();
+                
+                document.getElementById('lastUpdated').textContent = 'Last updated: ' + new Date().toLocaleString();
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        function updateStats() {
+            const totalPositions = positionsData.length;
+            const activePositions = positionsData.filter(p => p.status === 'OPEN').length;
+            const todayEvents = eventsData.filter(e => {
+                const eventDate = new Date(e.timestamp);
+                const today = new Date();
+                return eventDate.getDate() === today.getDate() &&
+                       eventDate.getMonth() === today.getMonth() &&
+                       eventDate.getFullYear() === today.getFullYear();
+            }).length;
+            const connectedAccounts = accountsData.filter(a => a.connected).length;
+
+            document.getElementById('totalPositions').textContent = totalPositions;
+            document.getElementById('activePositions').textContent = activePositions;
+            document.getElementById('todayEvents').textContent = todayEvents;
+            document.getElementById('connectedAccounts').textContent = connectedAccounts;
+        }
+
+        function renderAccounts() {
+            const container = document.getElementById('accountsContainer');
+            container.innerHTML = '';
+
+            accountsData.forEach(account => {
+                const col = document.createElement('div');
+                col.className = 'col-md-6 col-lg-3 mb-3';
+                col.innerHTML = `
+                    <div class="card h-100 ${account.connected ? 'border-success' : 'border-danger'}">
+                        <div class="card-body text-center">
+                            <div class="mb-2">
+                                <i class="fas ${account.connected ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'} fa-2x"></i>
+                            </div>
+                            <h6 class="card-title">${account.account_id}</h6>
+                            <p class="card-text text-muted">${account.exchange.toUpperCase()}</p>
+                            <p class="card-text">
+                                <small>Total: $${account.total_balance?.toFixed(2) || '0.00'}</small><br>
+                                <small>Available: $${account.available_balance?.toFixed(2) || '0.00'}</small>
+                            </p>
+                            <span class="badge ${account.connected ? 'bg-success' : 'bg-danger'}">
+                                ${account.connected ? 'Connected' : 'Disconnected'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(col);
+            });
+        }
+
+        function renderPositions() {
+            const tbody = document.getElementById('positionsTableBody');
+            tbody.innerHTML = '';
+
+            positionsData.forEach(position => {
+                const row = document.createElement('tr');
+                
+                // Calculate P&L class
+                const pnlClass = position.pnl_percentage > 0 ? 'profit-positive' : 
+                                position.pnl_percentage < 0 ? 'profit-negative' : '';
+                
+                // Format P&L with color
+                const pnlDisplay = position.pnl_percentage !== undefined ? 
+                    `${position.pnl_percentage > 0 ? '+' : ''}${position.pnl_percentage}%` : 
+                    'N/A';
+
+                row.innerHTML = `
+                    <td>${position.account_id}</td>
+                    <td>${position.symbol}</td>
+                    <td>${position.strategy_id}</td>
+                    <td>
+                        <span class="badge ${position.side === 'buy' ? 'bg-success' : 'bg-danger'}">
+                            ${position.side.toUpperCase()}
+                        </span>
+                    </td>
+                    <td>${position.initial_qty}</td>
+                    <td>${position.remaining_qty}</td>
+                    <td>$${position.entry_price?.toFixed(2) || '0.00'}</td>
+                    <td>$${position.current_price?.toFixed(2) || '0.00'}</td>
+                    <td class="${pnlClass}">${pnlDisplay}</td>
+                    <td>TP${position.tp_level}</td>
+                    <td>
+                        <span class="badge ${position.status === 'OPEN' ? 'bg-info status-open' : 'bg-secondary status-closed'}">
+                            ${position.status}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="showPositionDetails('${position.id}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderEvents() {
+            const tbody = document.getElementById('eventsTableBody');
+            tbody.innerHTML = '';
+
+            eventsData.slice(0, 10).forEach(event => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${event.event_id}</td>
+                    <td>${new Date(event.timestamp).toLocaleString()}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderExchangeComparison() {
+            const container = document.getElementById('exchangeComparison');
+            container.innerHTML = '';
+
+            // Group positions by exchange
+            const positionsByExchange = {};
+            positionsData.forEach(pos => {
+                const exchange = accountsData.find(acc => acc.account_id === pos.account_id)?.exchange || 'Unknown';
+                if (!positionsByExchange[exchange]) {
+                    positionsByExchange[exchange] = [];
+                }
+                positionsByExchange[exchange].push(pos);
+            });
+
+            Object.entries(positionsByExchange).forEach(([exchange, positions]) => {
+                const col = document.createElement('div');
+                col.className = 'col-md-6 mb-3';
+                col.innerHTML = `
+                    <div class="card">
+                        <div class="card-header bg-${exchange.toLowerCase() === 'binance' ? 'warning' : 'info'} text-white">
+                            <h6 class="mb-0">${exchange.toUpperCase()} Activity</h6>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Positions:</strong> ${positions.length}</p>
+                            <p><strong>Active Positions:</strong> ${positions.filter(p => p.status === 'OPEN').length}</p>
+                            <p><strong>Total Volume:</strong> $${positions.reduce((sum, pos) => sum + (pos.initial_qty * pos.entry_price || 0), 0).toFixed(2)}</p>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(col);
+            });
+        }
+
+        function refreshAllData() {
+            loadData();
+        }
+
+        function showPositionDetails(positionId) {
+            const position = positionsData.find(p => p.id === positionId);
+            if (position) {
+                alert(`Position Details:\n${JSON.stringify(position, null, 2)}`);
+            }
+        }
+
+        // Add search functionality to positions table
+        document.getElementById('searchPositions').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const tbody = document.getElementById('positionsTableBody');
+            const rows = tbody.getElementsByTagName('tr');
+
+            for (let row of rows) {
+                const cells = row.getElementsByTagName('td');
+                let found = false;
+
+                for (let cell of cells) {
+                    if (cell.textContent.toLowerCase().includes(searchTerm)) {
+                        found = true;
+                        break;
+                    }
+                }
+
+                row.style.display = found ? '' : 'none';
+            }
+        });
+    </script>
+</body>
+</html>
