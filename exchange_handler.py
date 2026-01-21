@@ -1,6 +1,10 @@
 import os
 from dotenv import load_dotenv
-from binance.um_futures import UMFutures
+try:
+    from binance.um_futures import UMFutures
+except ImportError:
+    print("❌ Error: binance-connector package not found. Please install it using: pip install binance-connector")
+    raise
 from pybit.unified_trading import HTTP
 import time
 
